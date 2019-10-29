@@ -31,9 +31,10 @@ public class SimplexAlg {
     private LinkedList<HistoricElement> historic;
     private SimplexState current;
     
+    
     public SimplexAlg(SimplexState initialState){
         historic = new LinkedList();
-        setCurrent(initialState, OP_TYPES.INITIAL);
+        setCurrent(initialState, OP_TYPES.INITIAL);    
     }
     
     public List<HistoricElement> getHistoric(){
@@ -41,9 +42,24 @@ public class SimplexAlg {
     }
     
     public void solve(){
+        
+        System.out.println(
+            SimplexProgram.matrixToString(current.getFullMatrix()) +"\n\n"); 
+        
         verifyBNonNegative();
         
-        printHistorical();
+        if(!isFCF())FASE_I();
+        FASE_II();
+        
+        
+        //printHistorical();
+    }
+    
+    private void FASE_I(){
+        System.out.println("FASE I");
+    }
+    private void FASE_II(){
+        System.out.println("FASE II");
     }
     
     private void verifyBNonNegative(){
@@ -67,6 +83,26 @@ public class SimplexAlg {
         historic.addLast(new HistoricElement(newState, operation));
         current = newState;
     }
+    
+    private boolean isFCF(){
+        boolean colValid, rowValid;
+        for(int i = 0; i < current.A.length; i++){
+            rowValid = false;
+            for(int j = 0; j < current.A[i].length && !rowValid; j++){
+                if(current.A[i][j] == 1) {
+                    colValid = true;
+                    for (int k = 0; k < current.A.length && colValid; k++) {
+                        if(k != i && current.A[k][j] != 0) colValid = false;
+                    }
+                    if(colValid) rowValid = true;
+                    System.out.printf("Col: %d, valid\n: %b", i, colValid);
+                }
+            }
+            if(!rowValid) return false;
+        }
+        return true;
+    }
+    
     
     
     

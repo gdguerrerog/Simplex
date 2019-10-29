@@ -11,9 +11,10 @@ package Logic;
  */
 public class SimplexState {
     
-    public double[][] A;
-    public double[] B;
-    public double [] FO;
+    public final double[][] A;
+    public final double[] B;
+    public final double [] FO;
+    public final int ROWS, COLS;
     
     public SimplexState(double[][] matrix, double[] FO){
         if(FO.length != matrix[0].length - 1) 
@@ -30,12 +31,16 @@ public class SimplexState {
                 else A[i][j] = matrix[i][j];
             } 
         }
+        ROWS = B.length;
+        COLS = FO.length;
     }
     
     public SimplexState(double[][] A, double[] B, double [] FO){
         this.A = A;
         this.B = B;
         this.FO = FO;
+        ROWS = B.length;
+        COLS = FO.length;
     }
     
     public double[][] getFullMatrix(){

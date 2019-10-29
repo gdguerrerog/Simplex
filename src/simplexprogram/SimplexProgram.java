@@ -37,9 +37,6 @@ public class SimplexProgram {
     
     public static void main(String[] args) {
         new SimplexProgram();
-        //System.out.println(matrixToString(MatrixUtils.multiply(new double[][]{{1, 2}, {2, 3}}, 
-        //        new double[][]{{1, 2, 5}, {3, 1, 0}})));
-        //System.out.println(matrixToString(MatrixUtils.trans(new double[][]{{1, 2}, {23, 22}, {100, 1}, {3, 2}})));
     }
     
 }
