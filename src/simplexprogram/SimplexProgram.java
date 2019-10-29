@@ -6,8 +6,10 @@
 package simplexprogram;
 
 import GUI.CommandGUI;
+import Logic.MatrixUtils;
 import Logic.SimplexAlg;
 import Logic.SimplexState;
+import java.util.Arrays;
 import simplexprogram.Result.*;
 
 /**

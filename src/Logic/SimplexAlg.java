@@ -5,6 +5,7 @@
  */
 package Logic;
 
+import java.util.Arrays;
 import java.util.LinkedList;
 import java.util.List;
 import simplexprogram.SimplexProgram;
@@ -80,8 +81,22 @@ public class SimplexAlg {
         System.out.println("FASE II");
         
         int[] BIndexes = BIndexes();
-        double[][] BINV = MatrixUtils.identity(BIndexes.length, BIndexes.length);
+        double[][] BInv = MatrixUtils.identity(BIndexes.length, BIndexes.length);
+        double[] cBasicos = cBasicos(BIndexes);
+        double[] PI = PI(cBasicos, BInv);
+        double[] newC = MatrixUtils.subtract(cBasicos, MatrixUtils.multiplyVector(PI, current.A));
         
+        System.out.println("Printring");
+        System.out.println(SimplexProgram.matrixToString(current.getFullMatrix()));
+        System.out.println(Arrays.toString(BIndexes));
+        System.out.println(Arrays.toString(cBasicos));
+        System.out.println(Arrays.toString(newC));
+        System.out.println(Arrays.toString(current.FO));
+        
+    }
+    
+    private double[] PI(double[] cBasicos, double[][] BInv){
+        return MatrixUtils.multiplyVector(cBasicos, BInv);
     }
     
     private int[] BIndexes(){
@@ -144,6 +159,13 @@ public class SimplexAlg {
             if(!rowValid) rowAuxiliarIndex.add(i);
         }
         return rowAuxiliarIndex;
+    }
+    
+    private double[] cBasicos(int[] BIndexes){
+        double[] exit = new double[BIndexes.length];
+        for(int i = 0; i < BIndexes.length; i++) 
+            exit[i] = current.FO[BIndexes[i]];
+        return exit;
     }
     
 }

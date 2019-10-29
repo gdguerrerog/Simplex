@@ -57,6 +57,21 @@ public class MatrixUtils {
         return exit;
     }
     
+    public static double[] multiplyVector(double[] vector, double[][] matrix){
+        return multiply(new double[][]{vector}, matrix)[0];
+    }
+    
+    public static double[] multiplyVector(double[][] matrix, double[] vector){
+        return trans(multiply(matrix, trans(new double[][]{vector})))[0];
+    }
+    
+    public static double[] subtract(double[] v1, double[] v2){
+        double[] exit = new double[v1.length];
+        for(int i = 0; i < exit.length; i++)
+            exit[i] = v1[i] - v2[i];
+        return exit;
+    }
+    
 }
 
 
