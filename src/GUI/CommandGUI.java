@@ -45,9 +45,9 @@ public class CommandGUI {
         if(true){
             
             double[][] testMatrix = 
-            {   {1, 0, 0, 0, -2},
-                {0, 1, 0, 1, -1-1}, 
-                {0, 0, 1, 0, 4.4}};
+            {   {1, 0, 0, 0, 2},
+                {0, 1, 2, 1, 11}, 
+                {0, 2, 1, 0, 4.4}};
             double[] testFO = 
                 {1, 2, 4, 3};
             main.solveEqSistem(testMatrix, testFO);

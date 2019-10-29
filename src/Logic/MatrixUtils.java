@@ -51,6 +51,12 @@ public class MatrixUtils {
         return exit;
     }
     
+    public static double[][] identity(int n, int m){
+        double[][] exit = new double[n][m];
+        for(int i = 0; i < n && i < m; i++) exit[i][i] = 1;
+        return exit;
+    }
+    
 }
 
 

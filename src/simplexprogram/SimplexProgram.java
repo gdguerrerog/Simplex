@@ -6,7 +6,6 @@
 package simplexprogram;
 
 import GUI.CommandGUI;
-import Logic.MatrixUtils;
 import Logic.SimplexAlg;
 import Logic.SimplexState;
 import simplexprogram.Result.*;
@@ -31,7 +30,7 @@ public class SimplexProgram {
     }    
     
     public SolveSystemResult solveEqSistem(double[][] matrix, double[] FO){
-        new SimplexAlg(new SimplexState(matrix, FO)).solve();
+        new SimplexAlg(new SimplexState(matrix, FO, false)).solve();
         return new SolveSystemResult(true, FO);
     }
     
