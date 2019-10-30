@@ -5,6 +5,7 @@
  */
 package Logic;
 
+import java.util.Arrays;
 /**
  *
  * @author German le yo
@@ -16,6 +17,8 @@ public class SimplexState {
     public final double [] FO;
     public final int ROWS, COLS;
     public final boolean isAuxiliar;
+    public final int[] base;
+    public final double[][] BInv;
     
     public SimplexState(double[][] matrix, double[] FO, boolean isAuxiliar){
         if(FO.length != matrix[0].length - 1) 
@@ -35,7 +38,11 @@ public class SimplexState {
         ROWS = b.length;
         COLS = FO.length;
         this.isAuxiliar = isAuxiliar;
+        this.base = null;
+        this.BInv = null;
+        
     }
+    
     
     public SimplexState(double[][] A, double[] b, double [] FO, boolean isAuxiliar){
         this.A = A;
@@ -44,6 +51,19 @@ public class SimplexState {
         ROWS = b.length;
         COLS = FO.length;
         this.isAuxiliar = isAuxiliar;
+        this.base = null;
+        this.BInv = null;
+    }
+    
+    public SimplexState(SimplexState lastState, int[] base, double[][] BInv){
+        this.A = lastState.A;
+        this.b = lastState.b;
+        this.FO = lastState.FO;
+        this.isAuxiliar = lastState.isAuxiliar;
+        this.ROWS = lastState.ROWS;
+        this.COLS = lastState.COLS;
+        this.base = base;
+        this.BInv = BInv;
     }
     
     public double[][] getFullMatrix(){

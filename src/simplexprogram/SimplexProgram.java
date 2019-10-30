@@ -32,7 +32,12 @@ public class SimplexProgram {
     }    
     
     public SolveSystemResult solveEqSistem(double[][] matrix, double[] FO){
-        new SimplexAlg(new SimplexState(matrix, FO, false)).solve();
+        SimplexAlg alg = new SimplexAlg(new SimplexState(matrix, FO, false));
+        SimplexAlg.AlgResult res = alg.solve();
+        System.out.println("Solution: ");
+        System.out.println(matrixToString(MatrixUtils.multiply(res.state.BInv, res.state.A)));
+        System.out.println("Hitoriacal: ");
+        alg.printHistorical();
         return new SolveSystemResult(true, FO);
     }
     
