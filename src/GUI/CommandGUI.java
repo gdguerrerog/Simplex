@@ -5,7 +5,6 @@
  */
 package GUI;
 
-import Logic.SimplexAlg;
 import Logic.SimplexAlg.AlgResult;
 import java.util.Scanner;
 import simplexprogram.SimplexProgram;
@@ -46,11 +45,14 @@ public class CommandGUI {
         if(true){ // forDebug true.
             
             double[][] testMatrix = 
-            {   {1, 1, 0, 1, 1},
-                {-2, 1, 4, 0, 11}};
+            {   {2, 2, 3, 1, 0, 0, 5},
+                {1, 1, -1, 0, 1, 0, 3},
+                {1, -1, 1, 0, 0, -1, 2}};
             double[] testFO = 
-                {-1, -2, 0, 0};
-            main.solveEqSistem(testMatrix, testFO).printSolution();
+                {-1, 1, -2, 0, 0, 0};
+            AlgResult res = main.solveEqSistem(testMatrix, testFO);
+            res.printHistorical();
+            res.printSolution();
             return;
         }
         
@@ -76,7 +78,7 @@ public class CommandGUI {
         for(int i = 0; i < columnas - 1; i++) FO[i] = scan.nextDouble();
         
         AlgResult result = main.solveEqSistem(eqSystem, FO);
-        
+        result.printHistorical();
         result.printSolution();
         
         mainMenu();    

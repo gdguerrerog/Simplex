@@ -5,11 +5,9 @@
  */
 package Logic;
 
-import java.util.Arrays;
 import java.util.LinkedList;
 import java.util.List;
 import javafx.util.Pair;
-import simplexprogram.SimplexProgram;
 
 /**
  *
@@ -36,15 +34,17 @@ public class SimplexAlg {
     }
     
     public enum RESULT_TYPE{
-        OK, NO_FCF;
+        OK, NO_FCF, NO_ACOTADA;
     }
     
     public class AlgResult{
         public final RESULT_TYPE resultType;
         public final SimplexState state;
-        public AlgResult(RESULT_TYPE resultType, SimplexState state){
+        public final LinkedList<HistoricElement> historic;
+        public AlgResult(RESULT_TYPE resultType, SimplexState state, LinkedList<HistoricElement> historic){
             this.resultType = resultType;
             this.state = state;
+            this.historic = historic;
         }
         
         public void printSolution(){
@@ -54,6 +54,13 @@ public class SimplexAlg {
                 for(int i = 0; i < state.ROWS; i++) 
                     System.out.printf("X_%d = %f\n", state.base[i], solution[i]);
             }  
+        }
+        
+        public void printHistorical(){
+            for(HistoricElement hisElement: historic) {
+                System.out.println("\n\n--------------------------------");
+                System.out.println(hisElement.state); 
+            }      
         }
     }
     
@@ -102,14 +109,13 @@ public class SimplexAlg {
         
         SimplexAlg auxiliar = new SimplexAlg(new SimplexState(auxiliarA, current.b, auxiliarFO, true));
         AlgResult res = auxiliar.solve();
-        historic.addAll(auxiliar.historic);
+        historic.addAll(res.historic);
         return res;
     }
     private AlgResult FASE_II(int[] initialBase, double[][] initialInv){
 
         setCurrent(new SimplexState(current, initialBase, initialInv), OP_TYPES.ITERATION);
 
-        double[] newC;
         int colPivote;
         
         Pair<Integer, double[]> rowAndNewA;
@@ -119,16 +125,14 @@ public class SimplexAlg {
             
             System.out.println("\n\n----------------------\nIteration");
             System.out.println("State:\n" + current.toString());           
-            newC = MatrixUtils.subtract(current.FO, MatrixUtils.multiplyVector(current.PI, current.A));
-            System.out.println("newC: " + Arrays.toString(newC));
-            
-            
-            if(pruebaOptimalidad(newC)){
-                if(current.isAuxiliar && current.Z != 0) return new AlgResult(RESULT_TYPE.NO_FCF, current);
-                else return new AlgResult(RESULT_TYPE.OK, current);
+            if(pruebaOptimalidad(current.c)){
+                if(current.isAuxiliar && current.Z != 0) return new AlgResult(RESULT_TYPE.NO_FCF, current, historic);
+                else return new AlgResult(RESULT_TYPE.OK, current, historic);
             }
-            colPivote = selectColPivote(newC);
+            colPivote = selectColPivote();
             rowAndNewA = selectFilaPivote(colPivote);
+            
+            if(verifySolucionNoAcotada(rowAndNewA.getValue())) return new AlgResult(RESULT_TYPE.NO_ACOTADA, current, historic);
             
             newBaseAndInv = calcNewBInv(rowAndNewA.getValue(), rowAndNewA.getKey(), colPivote);
             setCurrent(new SimplexState(current, newBaseAndInv.getValue(), newBaseAndInv.getKey()), OP_TYPES.ITERATION);
@@ -190,13 +194,6 @@ public class SimplexAlg {
         }
     }
     
-    
-    public void printHistorical(){
-        for(HistoricElement hisElement: historic) {
-            System.out.println("\n\n--------------------------------");
-            System.out.println(hisElement.state); 
-        }      
-    }
     private void setCurrent(SimplexState newState, OP_TYPES operation){
         historic.addLast(new HistoricElement(newState, operation));
         current = newState;
@@ -207,10 +204,10 @@ public class SimplexAlg {
         return true;
     }
     
-    private int selectColPivote(double[] newC){
+    private int selectColPivote(){
         int minValIndex = 0;
-        for(int i = 1; i < newC.length; i++) 
-            if(newC[i] < newC[minValIndex])
+        for(int i = 1; i < current.c.length; i++) 
+            if(current.c[i] < current.c[minValIndex])
                 minValIndex = i;
         return minValIndex;
     }
@@ -249,6 +246,11 @@ public class SimplexAlg {
             else P[i][rowPivote] = newA[i]/newA[rowPivote];   
         
         return new Pair(MatrixUtils.multiply(P, current.BInv), newBase);
+    }
+    
+    private boolean verifySolucionNoAcotada(double[] newA){
+        for(double a: newA) if(a > 0) return false;
+        return true;
     }
     
 }

@@ -22,6 +22,7 @@ public class SimplexState {
     public final double[][] BInv;
     public final double[] cBasicos;
     public final double[] PI;
+    public final double[] c;
     public final double Z;
     
     public SimplexState(double[][] matrix, double[] FO, boolean isAuxiliar){
@@ -39,6 +40,7 @@ public class SimplexState {
         this.cBasicos = null;
         this.PI = null;
         this.Z = Double.NaN;
+        this.c = null;
     }
     
     public SimplexState(double[][] A, double[] b, double [] FO, boolean isAuxiliar){
@@ -53,6 +55,7 @@ public class SimplexState {
         this.cBasicos = null;
         this.PI = null;
         this.Z = Double.NaN;
+        this.c = null;
     }
     
     public SimplexState(SimplexState lastState, int[] base, double[][] BInv){
@@ -67,6 +70,7 @@ public class SimplexState {
         this.cBasicos = cBasicos();
         this.PI = PI();
         this.Z = Z();
+        this.c = c();
     }
     
     private double[][] A(double[][] matrix){
@@ -117,16 +121,21 @@ public class SimplexState {
         return result;
     }
     
+    private double[] c(){
+        return MatrixUtils.subtract(FO, MatrixUtils.multiplyVector(PI, A));
+    }
+    
     @Override
     public String toString(){
         String exit = String.format("Aux: %b\nA:\n", isAuxiliar);
         exit += SimplexProgram.matrixToString(A) + "\nb:";
-        exit += Arrays.toString(b) + "\nBinv:\n";
-        exit += Arrays.toString(base) + "\nBase:\n";
+        exit += Arrays.toString(b) + "\nBase:\n";
+        exit += Arrays.toString(base) + "\nBInv:\n";
         exit += SimplexProgram.matrixToString(BInv) + "\nFO:\n";
-        exit += Arrays.toString(FO) + "\nc:";
-        exit +=  Arrays.toString(cBasicos) + "\nPI: ";
-        exit += Arrays.toString(PI) + "\nZ: " + Z;
+        exit += Arrays.toString(FO) + "\ncBásicos:";
+        exit += Arrays.toString(cBasicos) + "\nPI: ";
+        exit += Arrays.toString(PI) + "\nZ: " + Z + "\nc:";
+        exit += Arrays.toString(c);
         return exit;
     }
     
