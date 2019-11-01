@@ -5,9 +5,10 @@
  */
 package GUI;
 
+import Logic.SimplexAlg;
+import Logic.SimplexAlg.AlgResult;
 import java.util.Scanner;
 import simplexprogram.SimplexProgram;
-import simplexprogram.Result.*;
 
 /**
  *
@@ -42,15 +43,14 @@ public class CommandGUI {
     
     public void readEqSystem(){
         
-        if(true){
+        if(true){ // forDebug true.
             
             double[][] testMatrix = 
-            {   {1, 0, 0, 0, 2},
-                {1, 1, 2, 1, 11}, 
-                {0, 2, 1, 2, 4.4}};
+            {   {1, 1, 0, 1, 1},
+                {-2, 1, 4, 0, 11}};
             double[] testFO = 
-                {1, 2, 4, 3};
-            main.solveEqSistem(testMatrix, testFO);
+                {-1, -2, 0, 0};
+            main.solveEqSistem(testMatrix, testFO).printSolution();
             return;
         }
         
@@ -75,13 +75,9 @@ public class CommandGUI {
         
         for(int i = 0; i < columnas - 1; i++) FO[i] = scan.nextDouble();
         
-        SolveSystemResult result = main.solveEqSistem(eqSystem, FO);
+        AlgResult result = main.solveEqSistem(eqSystem, FO);
         
-        if(result.OK){
-            System.out.println("Problema Solucionado: ");
-            for(int i = 0; i< result.values.length; i++)
-                System.out.printf("X_%d = %f\n", i, result.values[i]);
-        }else System.out.println("Error solucionando el problema :'c");
+        result.printSolution();
         
         mainMenu();    
     }

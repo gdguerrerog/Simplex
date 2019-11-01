@@ -46,9 +46,18 @@ public class SimplexAlg {
             this.resultType = resultType;
             this.state = state;
         }
+        
+        public void printSolution(){
+            if(resultType != RESULT_TYPE.OK) System.out.println(resultType.name());
+            else {
+                double[] solution = state.solution();
+                for(int i = 0; i < state.ROWS; i++) 
+                    System.out.printf("X_%d = %f\n", state.base[i], solution[i]);
+            }  
+        }
     }
     
-    private LinkedList<HistoricElement> historic;
+    private final LinkedList<HistoricElement> historic;
     private SimplexState current;
     
     public SimplexAlg(SimplexState initialState){
@@ -61,8 +70,6 @@ public class SimplexAlg {
     }
     
     public AlgResult solve(){
-        System.out.println(
-            SimplexProgram.matrixToString(current.getFullMatrix()) +"\n\n"); 
         
         verifyBNonNegative();
         Pair<int[], List<Integer>> pair = verifyFCF();
@@ -78,8 +85,7 @@ public class SimplexAlg {
     }
     
     private AlgResult FASE_I(List<Integer> auxiliarVarRows){
-        System.out.println("FASE I");
-        
+       
         double[][] auxiliarA = new double[current.A.length]
                 [current.A[0].length + auxiliarVarRows.size()];
         for(int i = 0; i < auxiliarA.length; i++) 
@@ -94,32 +100,32 @@ public class SimplexAlg {
             cCount++;
         }
         
-        SimplexAlg auxiliar = new SimplexAlg(new SimplexState(auxiliarA, current.b, auxiliarFO, false));
+        SimplexAlg auxiliar = new SimplexAlg(new SimplexState(auxiliarA, current.b, auxiliarFO, true));
         AlgResult res = auxiliar.solve();
         historic.addAll(auxiliar.historic);
         return res;
     }
     private AlgResult FASE_II(int[] initialBase, double[][] initialInv){
-        System.out.println("FASE II");
-        System.out.printf("Initial Base: %s\n", Arrays.toString(initialBase));
-        
+
         setCurrent(new SimplexState(current, initialBase, initialInv), OP_TYPES.ITERATION);
 
-        double[] cBasicos = cBasicos(), PI, newC;
-        double Z;
+        double[] newC;
         int colPivote;
         
         Pair<Integer, double[]> rowAndNewA;
         Pair<double[][], int[]> newBaseAndInv;
         
         while(true){
-            PI = PI(cBasicos, current.BInv);
-            newC = MatrixUtils.subtract(cBasicos, MatrixUtils.multiplyVector(PI, current.A));
+            
+            System.out.println("\n\n----------------------\nIteration");
+            System.out.println("State:\n" + current.toString());           
+            newC = MatrixUtils.subtract(current.FO, MatrixUtils.multiplyVector(current.PI, current.A));
+            System.out.println("newC: " + Arrays.toString(newC));
+            
             
             if(pruebaOptimalidad(newC)){
-                Z = calcZ(PI, current.b);
-                if(Z == 0) return new AlgResult(RESULT_TYPE.OK, current);
-                else return new AlgResult(RESULT_TYPE.NO_FCF, current);
+                if(current.isAuxiliar && current.Z != 0) return new AlgResult(RESULT_TYPE.NO_FCF, current);
+                else return new AlgResult(RESULT_TYPE.OK, current);
             }
             colPivote = selectColPivote(newC);
             rowAndNewA = selectFilaPivote(colPivote);
@@ -130,9 +136,7 @@ public class SimplexAlg {
         }      
     }
     
-    private double[] PI(double[] cBasicos, double[][] BInv){
-        return MatrixUtils.multiplyVector(cBasicos, BInv);
-    }
+    
     
     
     /**
@@ -188,29 +192,19 @@ public class SimplexAlg {
     
     
     public void printHistorical(){
-        for(HistoricElement hisElement: historic) System.out.println(hisElement);       
+        for(HistoricElement hisElement: historic) {
+            System.out.println("\n\n--------------------------------");
+            System.out.println(hisElement.state); 
+        }      
     }
     private void setCurrent(SimplexState newState, OP_TYPES operation){
         historic.addLast(new HistoricElement(newState, operation));
         current = newState;
     }
-    
-    private double[] cBasicos(){
-        double[] exit = new double[current.base.length];
-        for(int i = 0; i < current.base.length; i++) 
-            exit[i] = current.FO[current.base[i]];
-        return exit;
-    }
-    
+
     private boolean pruebaOptimalidad(double[] cNew){
         for(double c: cNew) if(c < 0) return false;
         return true;
-    }
-    
-    private double calcZ(double[] PI, double[] b){
-        double result = 0;
-        for(int i = 0; i< PI.length; i++) result += PI[i]*b[i];
-        return result;
     }
     
     private int selectColPivote(double[] newC){

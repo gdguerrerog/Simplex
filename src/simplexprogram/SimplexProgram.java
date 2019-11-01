@@ -10,7 +10,6 @@ import Logic.MatrixUtils;
 import Logic.SimplexAlg;
 import Logic.SimplexState;
 import java.util.Arrays;
-import simplexprogram.Result.*;
 
 /**
  *
@@ -23,22 +22,19 @@ public class SimplexProgram {
     }
     
     public static String matrixToString(double[][] matrix){
+        if(matrix == null) return "NULL";
         String exit = "";
-        for(double[] row: matrix){
-            for(double col: row) exit += String.format("%.2f\t", col);
-            exit += "\n";
+        for (int i = 0; i < matrix.length; i++) {
+            if(i != 0) exit += "\n";
+            for(double col: matrix[i]) exit += String.format("%.2f\t", col);
         }
         return exit;
     }    
     
-    public SolveSystemResult solveEqSistem(double[][] matrix, double[] FO){
+    public SimplexAlg.AlgResult solveEqSistem(double[][] matrix, double[] FO){
         SimplexAlg alg = new SimplexAlg(new SimplexState(matrix, FO, false));
         SimplexAlg.AlgResult res = alg.solve();
-        System.out.println("Solution: ");
-        System.out.println(matrixToString(MatrixUtils.multiply(res.state.BInv, res.state.A)));
-        System.out.println("Hitoriacal: ");
-        alg.printHistorical();
-        return new SolveSystemResult(true, FO);
+        return res;
     }
     
     public static void main(String[] args) {

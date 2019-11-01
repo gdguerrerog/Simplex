@@ -6,6 +6,7 @@
 package Logic;
 
 import java.util.Arrays;
+import simplexprogram.SimplexProgram;
 /**
  *
  * @author German le yo
@@ -19,30 +20,26 @@ public class SimplexState {
     public final boolean isAuxiliar;
     public final int[] base;
     public final double[][] BInv;
+    public final double[] cBasicos;
+    public final double[] PI;
+    public final double Z;
     
     public SimplexState(double[][] matrix, double[] FO, boolean isAuxiliar){
         if(FO.length != matrix[0].length - 1) 
             throw new IllegalArgumentException(
                     String.format("The lenght of FO is %d, but most be %d", FO.length, matrix[0].length - 1));
-        
         this.FO = FO;
-        A = new double[matrix.length][];
-        b = new double[matrix.length];
-        for(int i = 0; i < matrix.length; i++){
-            A[i] = new double[matrix[i].length - 1];
-            for(int j = 0; j < matrix[i].length; j++){
-                if(j == matrix[i].length - 1) b[i] = matrix[i][j];
-                else A[i][j] = matrix[i][j];
-            } 
-        }
-        ROWS = b.length;
-        COLS = FO.length;
+        this.A = A(matrix);
+        this.b = b(matrix);
+        this.ROWS = b.length;
+        this.COLS = FO.length;
         this.isAuxiliar = isAuxiliar;
         this.base = null;
         this.BInv = null;
-        
+        this.cBasicos = null;
+        this.PI = null;
+        this.Z = Double.NaN;
     }
-    
     
     public SimplexState(double[][] A, double[] b, double [] FO, boolean isAuxiliar){
         this.A = A;
@@ -53,6 +50,9 @@ public class SimplexState {
         this.isAuxiliar = isAuxiliar;
         this.base = null;
         this.BInv = null;
+        this.cBasicos = null;
+        this.PI = null;
+        this.Z = Double.NaN;
     }
     
     public SimplexState(SimplexState lastState, int[] base, double[][] BInv){
@@ -64,6 +64,26 @@ public class SimplexState {
         this.COLS = lastState.COLS;
         this.base = base;
         this.BInv = BInv;
+        this.cBasicos = cBasicos();
+        this.PI = PI();
+        this.Z = Z();
+    }
+    
+    private double[][] A(double[][] matrix){
+        double[][] exit = new double[matrix.length][];
+        for(int i = 0; i < matrix.length; i++){
+            exit[i] = new double[matrix[i].length - 1];
+            for(int j = 0; j < matrix[i].length - 1; j++) exit[i][j] = matrix[i][j];       
+        }
+        return exit;
+    }
+    
+    private double[] b(double[][] matrix){
+        double[] exit = new double[matrix.length];
+        
+        for(int i = 0; i < matrix.length; i++) exit[i] = matrix[i][matrix[i].length - 1];
+        
+        return exit;
     }
     
     public double[][] getFullMatrix(){
@@ -75,4 +95,39 @@ public class SimplexState {
         }
         return exit;
     }
+    
+    private double[] PI(){
+        return MatrixUtils.multiplyVector(cBasicos, BInv);
+    }
+    
+    private double[] cBasicos(){
+        double[] exit = new double[base.length];
+        for(int i = 0; i < base.length; i++) 
+            exit[i] = FO[base[i]];
+        return exit;
+    }
+    
+    public double[] solution(){
+        return MatrixUtils.multiplyVector(BInv, b);
+    }
+    
+    private double Z(){
+        double result = 0;
+        for(int i = 0; i< PI.length; i++) result += PI[i]*b[i];
+        return result;
+    }
+    
+    @Override
+    public String toString(){
+        String exit = String.format("Aux: %b\nA:\n", isAuxiliar);
+        exit += SimplexProgram.matrixToString(A) + "\nb:";
+        exit += Arrays.toString(b) + "\nBinv:\n";
+        exit += Arrays.toString(base) + "\nBase:\n";
+        exit += SimplexProgram.matrixToString(BInv) + "\nFO:\n";
+        exit += Arrays.toString(FO) + "\nc:";
+        exit +=  Arrays.toString(cBasicos) + "\nPI: ";
+        exit += Arrays.toString(PI) + "\nZ: " + Z;
+        return exit;
+    }
+    
 }
