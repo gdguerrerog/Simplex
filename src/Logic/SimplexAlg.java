@@ -59,6 +59,7 @@ public class SimplexAlg {
         public void printHistorical(){
             for(HistoricElement hisElement: historic) {
                 System.out.println("\n\n--------------------------------");
+                System.out.printf("Operation: %s, State:\n", hisElement.operation.name());
                 System.out.println(hisElement.state); 
             }      
         }
@@ -72,6 +73,11 @@ public class SimplexAlg {
         setCurrent(initialState, OP_TYPES.INITIAL);  
     }
     
+    public SimplexAlg(SimplexState initialState, LinkedList<HistoricElement> historic){
+        this.historic = historic;
+        setCurrent(initialState, OP_TYPES.INITIAL); 
+    }
+    
     public List<HistoricElement> getHistoric(){
         return historic;
     }
@@ -81,18 +87,16 @@ public class SimplexAlg {
         verifyBNonNegative();
         Pair<int[], List<Integer>> pair = verifyFCF();
         
-        if(!pair.getValue().isEmpty()) {
-            AlgResult res= FASE_I(pair.getValue());
+        if(!pair.getValue().isEmpty()) { //No esta en FCF, pues hay variables sin pivote
+            AlgResult res = FASE_I(pair.getValue());
             if(res.resultType != RESULT_TYPE.OK) return res;
             return FASE_II(res.state.base, res.state.BInv);
         }else return FASE_II(pair.getKey(), MatrixUtils.identity(current.ROWS, current.ROWS));
 
-        
-        //printHistorical();
     }
     
     private AlgResult FASE_I(List<Integer> auxiliarVarRows){
-       
+        System.out.println("Fase I");
         double[][] auxiliarA = new double[current.A.length]
                 [current.A[0].length + auxiliarVarRows.size()];
         for(int i = 0; i < auxiliarA.length; i++) 
@@ -107,24 +111,20 @@ public class SimplexAlg {
             cCount++;
         }
         
-        SimplexAlg auxiliar = new SimplexAlg(new SimplexState(auxiliarA, current.b, auxiliarFO, true));
+        SimplexAlg auxiliar = new SimplexAlg(new SimplexState(auxiliarA, current.b, auxiliarFO, true), historic);
         AlgResult res = auxiliar.solve();
-        historic.addAll(res.historic);
         return res;
     }
     private AlgResult FASE_II(int[] initialBase, double[][] initialInv){
-
+        System.out.println("Fase II");
         setCurrent(new SimplexState(current, initialBase, initialInv), OP_TYPES.ITERATION);
 
         int colPivote;
         
         Pair<Integer, double[]> rowAndNewA;
-        Pair<double[][], int[]> newBaseAndInv;
+        Pair<double[][], int[]> invAndNewBase;
         
-        while(true){
-            
-            System.out.println("\n\n----------------------\nIteration");
-            System.out.println("State:\n" + current.toString());           
+        while(true){         
             if(pruebaOptimalidad(current.c)){
                 if(current.isAuxiliar && current.Z != 0) return new AlgResult(RESULT_TYPE.NO_FCF, current, historic);
                 else return new AlgResult(RESULT_TYPE.OK, current, historic);
@@ -134,8 +134,8 @@ public class SimplexAlg {
             
             if(verifySolucionNoAcotada(rowAndNewA.getValue())) return new AlgResult(RESULT_TYPE.NO_ACOTADA, current, historic);
             
-            newBaseAndInv = calcNewBInv(rowAndNewA.getValue(), rowAndNewA.getKey(), colPivote);
-            setCurrent(new SimplexState(current, newBaseAndInv.getValue(), newBaseAndInv.getKey()), OP_TYPES.ITERATION);
+            invAndNewBase = calcNewBInv(rowAndNewA.getValue(), rowAndNewA.getKey(), colPivote);
+            setCurrent(new SimplexState(current, invAndNewBase.getValue(), invAndNewBase.getKey()), OP_TYPES.ITERATION);
             
         }      
     }
@@ -158,12 +158,18 @@ public class SimplexAlg {
         int[] pivotes = new int[current.ROWS];
         for(int i = 0; i < pivotes.length; i++) pivotes[i] = -1;
         
+        // Si ya hay una base definida, cambie la matriz A por 
+        // la obtenida con esa base
+        double[][] A;
+        if(current.BInv != null) A = MatrixUtils.multiply(current.BInv, current.A);
+        else A = current.A;
+        
         // Para saber si una columna puede ser pivote. No lo sera si contiene un valor
         // diferente de 0 o 1
         boolean[] discartedPivote = new boolean[current.COLS];
-        for(int i = 0; i < current.A.length; i++){
-            for (int j = 0; pivotes[i] == -1 && j < current.A[i].length; j++) if(current.A[i][j] == 1){
-                for (int k = 0; k < current.A.length && !discartedPivote[j]; k++) 
+        for(int i = 0; i < A.length; i++){
+            for (int j = 0; pivotes[i] == -1 && j < A[i].length; j++) if(A[i][j] == 1){
+                for (int k = 0; k < A.length && !discartedPivote[j]; k++) 
                     if(k != i && current.A[k][j] != 0)
                         discartedPivote[j] = true;
                 
