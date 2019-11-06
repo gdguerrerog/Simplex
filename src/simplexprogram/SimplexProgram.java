@@ -6,6 +6,7 @@
 package simplexprogram;
 
 import GUI.CommandGUI;
+import GUI.GUI;
 import Logic.MatrixUtils;
 import Logic.SimplexAlg;
 import Logic.SimplexState;
@@ -18,7 +19,8 @@ import java.util.Arrays;
 public class SimplexProgram {
     
     private SimplexProgram(){
-        new CommandGUI(this);
+        //new CommandGUI(this);
+        new GUI(this);
     }
     
     public static String matrixToString(double[][] matrix){
