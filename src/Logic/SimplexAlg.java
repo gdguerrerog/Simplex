@@ -5,6 +5,7 @@
  */
 package Logic;
 
+import java.util.Arrays;
 import java.util.LinkedList;
 import java.util.List;
 import javafx.util.Pair;
@@ -249,7 +250,17 @@ public class SimplexAlg {
         // Calculando columna RHO
         for(int i = 0; i < P.length; i++)
             if(i == rowPivote) P[i][rowPivote] = 1/newA[rowPivote];
-            else P[i][rowPivote] = newA[i]/newA[rowPivote];   
+            else P[i][rowPivote] = -1 * newA[i]/newA[rowPivote];   
+        
+        /*
+        System.out.println("P:");
+        System.out.println(simplexprogram.SimplexProgram.matrixToString(P));
+        System.out.println("currentBInv");
+        System.out.println(simplexprogram.SimplexProgram.matrixToString(current.BInv));
+        
+        System.out.println("A:");
+        System.out.println(Arrays.toString(newA));
+        */
         
         return new Pair(MatrixUtils.multiply(P, current.BInv), newBase);
     }
