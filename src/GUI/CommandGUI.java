@@ -45,12 +45,14 @@ public class CommandGUI {
         if(true){ // forDebug true.
             
             double[][] testMatrix = 
-            {   {2, 2, 3, 1, 0, 0, 5},
-                {1, 1, -1, 0, 1, 0, 3},
-                {1, -1, 1, 0, 0, -1, 2}};
+            {   {2, 2, 3, 1, 0, 0},
+                {1, 1, -1, 0, 1, 0},
+                {1, -1, 1, 0, 0, -1}};
+            double[] b = {5, 3, 2};
             double[] testFO = 
                 {-1, 1, -2, 0, 0, 0};
-            AlgResult res = main.solveEqSistem(testMatrix, testFO);
+            
+            AlgResult res = main.solveEqSistem(testMatrix, b, testFO);
             res.printHistorical();
             res.printSolution();
             return;
@@ -64,20 +66,24 @@ public class CommandGUI {
         columnas = scan.nextInt();
         
         double[][] eqSystem = new double[filas][columnas];
+        double[] b = new double[filas];
         
-        for(int i = 0; i < columnas - 1; i++) System.out.printf("X_%d\t", i);
+        for(int i = 0; i < columnas; i++) System.out.printf("X_%d\t", i);
         System.out.println("b_j");
-        for(int i = 0; i < filas; i++)
+        for(int i = 0; i < filas; i++){
             for(int j = 0; j < columnas; j++) 
                 eqSystem[i][j] = scan.nextDouble();
+            b[i] = scan.nextDouble();
+        }
+            
         
         System.out.println("Escriba el vector de la función objetivo: ");
         
-        double[] FO = new double[columnas - 1];
+        double[] FO = new double[columnas];
         
-        for(int i = 0; i < columnas - 1; i++) FO[i] = scan.nextDouble();
+        for(int i = 0; i < columnas; i++) FO[i] = scan.nextDouble();
         
-        AlgResult result = main.solveEqSistem(eqSystem, FO);
+        AlgResult result = main.solveEqSistem(eqSystem, b, FO);
         result.printHistorical();
         result.printSolution();
         

@@ -33,10 +33,15 @@ public class SimplexProgram {
         return exit;
     }    
     
-    public SimplexAlg.AlgResult solveEqSistem(double[][] matrix, double[] FO){
-        SimplexAlg alg = new SimplexAlg(new SimplexState(matrix, FO, false));
-        SimplexAlg.AlgResult res = alg.solve();
-        return res;
+    public SimplexAlg.AlgResult solveEqSistem(double[][] matrix, double[] b, double[] FO){
+        SimplexAlg alg = new SimplexAlg(new SimplexState(matrix, b, FO, false));
+        
+        try{
+            SimplexAlg.AlgResult res = alg.solve();
+            return res;
+        }catch(Exception ex){
+            return null;
+        }
     }
     
     public static void main(String[] args) {

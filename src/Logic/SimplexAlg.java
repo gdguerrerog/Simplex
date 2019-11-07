@@ -5,7 +5,6 @@
  */
 package Logic;
 
-import java.util.Arrays;
 import java.util.LinkedList;
 import java.util.List;
 import javafx.util.Pair;
@@ -54,6 +53,7 @@ public class SimplexAlg {
                 double[] solution = state.solution();
                 for(int i = 0; i < state.ROWS; i++) 
                     System.out.printf("X_%d = %f\n", state.base[i], solution[i]);
+                System.out.println("Z = " + this.state.Z);
             }  
         }
         
@@ -97,7 +97,6 @@ public class SimplexAlg {
     }
     
     private AlgResult FASE_I(List<Integer> auxiliarVarRows){
-        System.out.println("Fase I");
         double[][] auxiliarA = new double[current.A.length]
                 [current.A[0].length + auxiliarVarRows.size()];
         for(int i = 0; i < auxiliarA.length; i++) 
@@ -117,7 +116,6 @@ public class SimplexAlg {
         return res;
     }
     private AlgResult FASE_II(int[] initialBase, double[][] initialInv){
-        System.out.println("Fase II");
         setCurrent(new SimplexState(current, initialBase, initialInv), OP_TYPES.ITERATION);
 
         int colPivote;

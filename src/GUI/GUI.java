@@ -5,8 +5,15 @@
  */
 package GUI;
 
+import Logic.SimplexAlg;
 import java.awt.BorderLayout;
+import java.awt.Color;
+import java.awt.Component;
+import java.awt.Container;
+import java.awt.Dimension;
 import java.awt.FlowLayout;
+import java.awt.GridBagConstraints;
+import java.awt.GridBagLayout;
 import java.awt.GridLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -22,6 +29,7 @@ import simplexprogram.SimplexProgram;
  */
 import javax.swing.JButton;
 import javax.swing.JLabel;
+import javax.swing.border.LineBorder;
 public class GUI implements ActionListener{
     
     private SimplexProgram simplexProgram;
@@ -31,8 +39,10 @@ public class GUI implements ActionListener{
     private JTextField[][] system;
     private JTextField[] FO, B;
     private JLabel[] labels;
+    private JLabel infoLabel;
+    GridBagConstraints c;
     
-    private JButton buttonAddCol, buttonAddRow, buttonRemoveCol, buttonRemoveRow;
+    private JButton buttonAddCol, buttonAddRow, buttonRemoveCol, buttonRemoveRow, solve;
     private int rows, cols;
     
     public GUI(SimplexProgram simplexProgram){
@@ -42,26 +52,53 @@ public class GUI implements ActionListener{
         
         frame = new JFrame("Simplex Revisado");
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+        frame.setLayout(new BorderLayout());
         
-        GPanel = new JPanel(new BorderLayout());
+        GPanel = new JPanel(new GridBagLayout());
+        c = new GridBagConstraints();
         
+        c.gridx = 0;
+        c.gridy = 0;
+        c.fill = GridBagConstraints.HORIZONTAL;
+        labelPanel = new JPanel(labelLayout = new GridLayout(1, 0));    
+        //labelPanel.setBorder(new LineBorder(Color.BLACK));
+        GPanel.add(labelPanel, c);
+        
+        c.gridx = 1;
+        c.gridy = 0;
+        JPanel tmp = new JPanel();
+        tmp.add(new JLabel("b"));
+        GPanel.add(tmp, c);
+        
+        //add(GPanel, new JLabel("b"));
+        
+        c.gridx = 0;
+        c.gridy = 1;
         systemPanel = new JPanel(systemLayout = new GridLayout(1, 0));        
-        GPanel.add(systemPanel, BorderLayout.CENTER);
+        GPanel.add(systemPanel, c);
         
-        labelPanel = new JPanel(labelLayout = new GridLayout(1, 0));        
-        GPanel.add(labelPanel, BorderLayout.NORTH);
-        
-        FOPanel = new JPanel(FOLayout = new GridLayout(1, 0));        
-        GPanel.add(FOPanel, BorderLayout.SOUTH);
-        
+        c.gridy = 1;
+        c.gridx = 1;
         BPanel = new JPanel(BLayout = new GridLayout(1, 0));        
-        GPanel.add(FOPanel, BorderLayout.EAST);
+        GPanel.add(BPanel, c);
+             
+        c.gridx = 0;
+        c.gridy = 2;
+        c.weightx = 20;
+        FOPanel = new JPanel(FOLayout = new GridLayout(1, 0));        
+        GPanel.add(FOPanel, c);
+        
+        c.gridx = 1;
+        c.gridy = 2;
+        tmp = new JPanel();
+        tmp.add(new JLabel("Z (a min)"));
+        GPanel.add(tmp, c);
+        
+        //add(GPanel, new JLabel("Z (a min)"));
         
         frame.add(GPanel, BorderLayout.CENTER);
         
-        JPanel tmp = new JPanel();
-        BoxLayout tmpLayout = new BoxLayout(tmp, BoxLayout.Y_AXIS);
-        tmp.setLayout(tmpLayout);
+        tmp = new JPanel();
         
         buttonAddCol = new JButton("+ COL");
         buttonAddCol.addActionListener(this);
@@ -79,7 +116,22 @@ public class GUI implements ActionListener{
         buttonRemoveRow.addActionListener(this);
         tmp.add(buttonRemoveRow);
         
-        frame.add(tmp, BorderLayout.EAST);
+        c.gridx = 0;
+        c.gridy = 3;
+        GPanel.add(tmp, c);
+        
+        
+        solve = new JButton("Solve");
+        solve.addActionListener(this);
+        
+        c.gridx = 1;
+        c.gridy = 3;
+        GPanel.add(solve, c);
+        //add(GPanel, solve);
+        
+        
+        frame.add(GPanel, BorderLayout.CENTER);
+        frame.add(infoLabel = new JLabel(), BorderLayout.NORTH);
         
         system = new JTextField[0][0];
         FO = new JTextField[0];
@@ -100,6 +152,7 @@ public class GUI implements ActionListener{
         else if(e.getSource().equals(buttonAddRow)) addRow();
         else if(e.getSource().equals(buttonRemoveCol)) removeCol();
         else if(e.getSource().equals(buttonRemoveRow)) removeRow();
+        else if(e.getSource().equals(solve)) solve();
     }
     
     private void update(int newRows, int newCols){
@@ -124,34 +177,35 @@ public class GUI implements ActionListener{
         JTextField[] newFO = new JTextField[newCols];
         JLabel[] newLabels = new JLabel[newCols];
         JTextField[] newB = new JTextField[newRows];
+        
         int i = 0;
         for(; i < cols && i < newCols; i++){
-            FOPanel.add(newFO[i] = FO[i]);
-            labelPanel.add(newLabels[i] = labels[i]);
+            add(FOPanel, newFO[i] = FO[i]);
+            add(labelPanel, newLabels[i] = labels[i]);
         }
         for(; i < newCols; i++){
-            FOPanel.add(newFO[i] = new JTextField());
-            labelPanel.add(newLabels[i] = new JLabel("X_" + i));
+            add(FOPanel, newFO[i] = getTextField());
+            add(labelPanel, newLabels[i] = new JLabel("X_" + i));
         }
         
         i = 0;
         for(; i < rows && i < newRows; i++)
-            BPanel.add(newB[i] = B[i]);
+            add(BPanel, newB[i] = B[i]);
         for(; i < newRows; i++)
-            BPanel.add(newB[i] = new JTextField());
+            add(BPanel, newB[i] = getTextField());
         
         i = 0;
         for(; i < cols && i < newRows; i++){
             int j = 0;
             for (; j > rows && j < newCols; j++)
-                systemPanel.add(newSystem[i][j] = system[i][j]);
+                add(systemPanel, newSystem[i][j] = system[i][j]);
             for(;j < newCols; j++) 
-                systemPanel.add(newSystem[i][j] = new JTextField());
+                add(systemPanel, newSystem[i][j] = getTextField());
         }
         
         for(; i < newRows; i++)
-            for (int j = 0; j < newCols; j++) 
-                systemPanel.add(newSystem[i][j] = new JTextField());
+            for (int j = 0; j < newCols; j++)
+                add(systemPanel, newSystem[i][j] = getTextField());
         
         
         system = newSystem;
@@ -162,8 +216,9 @@ public class GUI implements ActionListener{
         cols = newCols;
         rows = newRows;
         
-        frame.revalidate();
-        frame.repaint();
+        frame.pack();
+        //frame.revalidate();
+        //frame.repaint();
         
     }
     
@@ -177,14 +232,67 @@ public class GUI implements ActionListener{
     }
     
     private void removeCol(){
-        if(cols > 1){
-            update(rows, cols - 1);
-        }
+        if(cols > 1) update(rows, cols - 1);
     }
     
     private void removeRow(){
-        if(rows > 1){
-            update(rows - 1, cols);
-        }
+        if(rows > 1) update(rows - 1, cols);
+        
     }   
+    
+    private void solve(){
+        
+        SimplexAlg.AlgResult res = null;
+        double[][] matrix = new double[rows][cols];
+        double[] FO = new double[cols];
+        double[] B = new double[rows];
+        
+        infoLabel.setText("");
+        
+        try{
+            for(int i = 0; i < rows; i++)
+                for(int j = 0; j < cols; j++)
+                    matrix[i][j] = Double.parseDouble(system[i][j].getText());
+                   
+            for(int i = 0; i < cols; i++)
+                FO[i] = Double.parseDouble(this.FO[i].getText());
+            
+            for(int i = 0; i < rows; i++)
+                B[i] = Double.parseDouble(this.B[i].getText());
+               
+        }catch(NumberFormatException ex){
+            infoLabel.setText("Hay un campo no numérico :c");
+            return;
+        }
+        
+        res = simplexProgram.solveEqSistem(matrix, B, FO);
+        res.printSolution();
+    }
+    
+    private JTextField getTextField(){
+        JTextField field = new JTextField("0"){
+            @Override
+            public Dimension getMaximumSize(){
+                return new Dimension(50, 20);
+            }
+            
+            @Override
+            public Dimension getPreferredSize(){
+                return getMaximumSize();
+            }
+        };
+        return field;
+    }
+    
+    private void add(Container container, Component element){
+        JPanel tmp = new JPanel();
+        tmp.add(element);
+        container.add(tmp);
+    }
+    
+    private void add(Container container, Component element, GridBagConstraints c){
+        JPanel tmp = new JPanel();
+        tmp.add(element);
+        container.add(tmp, c);
+    }
 }
