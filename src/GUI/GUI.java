@@ -28,8 +28,12 @@ import simplexprogram.SimplexProgram;
  * @author German le yo
  */
 import javax.swing.JButton;
+import javax.swing.JDialog;
 import javax.swing.JLabel;
+import javax.swing.JScrollPane;
+import javax.swing.JTable;
 import javax.swing.border.LineBorder;
+import javax.swing.table.DefaultTableModel;
 public class GUI implements ActionListener{
     
     private SimplexProgram simplexProgram;
@@ -216,10 +220,7 @@ public class GUI implements ActionListener{
         cols = newCols;
         rows = newRows;
         
-        frame.pack();
-        //frame.revalidate();
-        //frame.repaint();
-        
+        frame.pack(); 
     }
     
     
@@ -228,7 +229,7 @@ public class GUI implements ActionListener{
     }
      
     private void addRow(){
-        update(rows + 1, cols);
+        if(rows < cols) update(rows + 1, cols);
     }
     
     private void removeCol(){
@@ -266,6 +267,10 @@ public class GUI implements ActionListener{
         }
         
         res = simplexProgram.solveEqSistem(matrix, B, FO);
+        
+        new AnswerDialog(res);
+        
+        res.printHistorical();
         res.printSolution();
     }
     
@@ -290,9 +295,173 @@ public class GUI implements ActionListener{
         container.add(tmp);
     }
     
-    private void add(Container container, Component element, GridBagConstraints c){
-        JPanel tmp = new JPanel();
-        tmp.add(element);
-        container.add(tmp, c);
+    private class AnswerDialog extends JDialog{
+        
+        JPanel answerPanel;
+        JScrollPane scrollHistoric;
+        
+        public AnswerDialog(SimplexAlg.AlgResult result){
+            super(frame);
+            setTitle("Historico");
+            setModal(true);
+            setDefaultCloseOperation(JDialog.DISPOSE_ON_CLOSE);
+            setLayout(new BorderLayout());
+            
+            answerPanel = new JPanel();
+            answerPanel.setLayout(new GridLayout(result.historic.size(), 1));
+            
+            JPanel tmp, tmp2;
+            BoxLayout tmpLayout;
+            JTable table;
+            DefaultTableModel tableModel;
+            String[][] tableValues;
+            
+            for(SimplexAlg.HistoricElement element: result.historic){
+                tmp = new JPanel();
+                tmpLayout = new BoxLayout(tmp, BoxLayout.Y_AXIS);
+                tmp.setLayout(tmpLayout);
+                
+                tmp2 = new JPanel();
+                tmpLayout = new BoxLayout(tmp2, BoxLayout.X_AXIS);
+                tmp2.setLayout(tmpLayout);
+                tmp2.add(new JLabel("Operation:"));
+                tmp2.add(new JLabel(element.operation.name()));
+                
+                tmp.add(tmp2);
+                
+                tmp2 = new JPanel();
+                tmpLayout = new BoxLayout(tmp2, BoxLayout.X_AXIS);
+                tmp2.setLayout(tmpLayout);
+                
+                tmp2.add(new JLabel("Is Auxiliar:"));                
+                tmp2.add(new JLabel(String.valueOf(element.state.isAuxiliar)));
+                
+                
+                
+                tmp.add(tmp2);
+                
+                table = getTable(element.state.A, element.state.COLS);
+                tmp.add(new JLabel("A:"));
+                tmp.add(table);
+                
+                table = getTable(element.state.b, element.state.ROWS);
+                tmp.add(new JLabel("b:"));
+                tmp.add(table);
+                
+                table = getTable(element.state.FO, element.state.COLS);
+                tmp.add(new JLabel("c:"));
+                tmp.add(table);
+                
+                
+                if(element.state.BInv != null){
+                    table = getTable(element.state.BInv, element.state.ROWS);              
+                    tmp.add(new JLabel("B inversa:"));
+                    tmp.add(table);
+                }
+                
+                if(element.state.base != null){
+                    table = getTable(element.state.base, element.state.ROWS);
+                    tmp.add(new JLabel("Columnas de la base: "));
+                    tmp.add(table);
+                }                
+                
+                tmp.add(tmp2);
+                
+                if(result.state.Z != Double.NaN) {
+                    tmp.add(new JLabel("Z: " + result.state.Z));
+                }
+                
+                tmp.setBorder(new LineBorder(Color.BLACK));
+                answerPanel.add(tmp);
+            }
+            
+            scrollHistoric = new JScrollPane(answerPanel) {
+                @Override
+                public Dimension getPreferredSize(){
+                    return new Dimension(500, 300);
+                }                
+            };
+            add(scrollHistoric, BorderLayout.CENTER);
+            
+            if(result.resultType == SimplexAlg.RESULT_TYPE.OK){
+                double[] solution = result.state.fullSolution();
+            
+                tmp = new JPanel(new GridLayout(solution.length + 2, 1));
+                tmp.add(new JLabel("Solución: "));
+
+                for(int i = 0; i < solution.length; i++){
+                    tmp.add(new JLabel("X_" + i + ": " + String.valueOf(solution[i])));
+                }
+
+                tmp.add(new JLabel("Z: " + result.state.Z));
+
+                add(tmp, BorderLayout.EAST);
+            }
+            
+            String labelValue = "Tipo de solución: ";
+            switch(result.resultType){
+                case OK: labelValue += "Con solución ´óptima"; break;
+                case NO_ACOTADA: labelValue += "No acotada"; break;
+                case NO_FCF: labelValue += "No hay solución"; break;
+            }
+            
+            add(new JLabel(labelValue), BorderLayout.SOUTH);
+            
+            pack();
+            setLocationRelativeTo(null);
+            setVisible(true);
+        }
+        
+        
+        private DefaultTableModel getModel(String[][] values, int cols){
+            return new DefaultTableModel(values, new String[cols]){
+                @Override
+                public boolean isCellEditable(int row, int col){
+                    return false;
+                }
+            };
+        }
+        
+        private JTable getTable(double[][] info, int cols){
+            String[][] tableValues = matrixToStringArr(info);
+            return new JTable(getModel(tableValues, cols));
+        }
+        
+        private JTable getTable(double[] info, int cols){
+            String[] tableValues = arrToStringArr(info);
+            return new JTable(getModel(new String[][]{tableValues}, cols));
+        }
+        
+        private JTable getTable(int[] info, int cols){
+            String[] tableValues = arrToStringArr(info);
+            return new JTable(getModel(new String[][]{tableValues}, cols));
+        }
+        
+        private String[][] matrixToStringArr(double[][] arr){
+            String[][] exit = new String[arr.length][];
+            for(int i = 0; i < exit.length; i++){
+                exit[i] = new String[arr[i].length];
+                for(int j = 0; j < exit[i].length; j++){
+                    exit[i][j] = String.valueOf(arr[i][j]);
+                }
+            }
+            return exit;
+        }
+
+        private String[] arrToStringArr(double[] arr){
+            String[] exit = new String[arr.length];
+            for(int i = 0; i < exit.length; i++){
+                exit[i] = String.valueOf(arr[i]);
+            }
+            return exit;
+        }
+        
+        private String[] arrToStringArr(int[] arr){
+            String[] exit = new String[arr.length];
+            for(int i = 0; i < exit.length; i++){
+                exit[i] = String.valueOf(arr[i]);
+            }
+            return exit;
+        }
     }
 }

@@ -115,6 +115,15 @@ public class SimplexState {
         return MatrixUtils.multiplyVector(BInv, b);
     }
     
+    public double[] fullSolution(){
+        double[] solution = new double[COLS], tmpSol = solution();
+        
+        for(int i = 0; i < ROWS; i++){
+            solution[base[i]] = tmpSol[i];
+        } 
+        return solution;
+    }
+    
     private double Z(){
         double result = 0;
         for(int i = 0; i< PI.length; i++) result += PI[i]*b[i];
